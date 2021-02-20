@@ -5,11 +5,14 @@ import json
 import os
 import time
 import hashlib
-import sys
 import logging
 import argparse
+import sys
+if sys.version > '3':
+    PY3 = True
+else:
+    PY3 = False
 
-# 请使用 python2.x 版本
 # 从./src目录导入java后缀的文件，运行示例：
 # python importUtil.py -d ./src -e java
 
@@ -46,6 +49,8 @@ def parseFile(file):
     # logger.info('start parse file:%s', file.name)
     try:
         for index, line in enumerate(file):
+            if PY3:
+                line = line.decode()
             if startIndex == -1:
                 startIndex = line.find('@easydoc api')
                 if startIndex > 0:
@@ -156,6 +161,8 @@ def parseFile(file):
 
 def md5hash(string):
     m = hashlib.md5()
+    if PY3:
+        string = string.encode('utf8')
     m.update(string)
     return m.hexdigest()
 
@@ -187,7 +194,7 @@ def searchFiles(dir, ext):
         if os.path.isdir(path):
             searchFiles(path, ext)
         elif ext is None or extension == ext:
-            with open(path, 'r') as file:
+            with open(path, 'rb') as file:
                 # 根据修改时间，判断是否需要扫描
                 modifyTs = int(os.path.getmtime(path))
                 lastModifyTs = upLogDict.get('fileUpTs', {}).get(path)
